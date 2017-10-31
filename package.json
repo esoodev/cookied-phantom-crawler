@@ -1,0 +1,15 @@
+{
+  "name": "login-crawler",
+  "version": "0.1.0",
+  "description": "",
+  "main": "login-crawler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "esoodev@gmail..com",
+  "license": "MIT",
+  "dependencies": {
+    "jsdom": "^11.3.0",
+    "request": "^2.83.0"
+  }
+}
