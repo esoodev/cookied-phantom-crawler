@@ -1,7 +1,10 @@
 const qs = require('querystring')
 
 var LoginCrawler = require('./login-crawler')
-var crawler = new LoginCrawler(false)
+var crawler = new LoginCrawler({
+    maxConnections: 2,
+    isDebug: false
+})
 
 const boardUrl = 'http://www.slrclub.com/bbs/zboard.php?'
 
@@ -39,8 +42,14 @@ async function main() {
     // }
 
     //console.log( crawler._getCookieJar('https://slrclub.com/') ) 
-    console.log( await crawler.slowLoad('http://www.slrclub.com/bbs/vx2.php?id=used_market&category=1&no=8154109', 2000))
+    //console.log( await crawler.slowLoad('http://www.slrclub.com/bbs/vx2.php?id=used_market&category=1&no=8154109', 2000))
     // console.log( crawler._getCookieJar('https://slrclub.com/') ) 
+
+    for (var i = 0; i < 20; i++) {
+        crawler.slowQueue().then((res) => {
+            console.log(res)
+        })
+    }
 
 }
 

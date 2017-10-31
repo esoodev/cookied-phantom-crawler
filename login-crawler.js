@@ -6,21 +6,19 @@ request = request.defaults({
     jar: cookieJar
 })
 
-const jsdom = require("jsdom")
+const jsdom = require('jsdom')
 const {
     JSDOM
 } = jsdom
 
-
+const Queue = require('promise-queue')
 
 module.exports = class LoginCrawler {
 
-    constructor(options, isDebug) {
-        this.emitter = new EventEmitter()
-        emitter.on('fastQueue', )
-
+    constructor(options) {
         this.maxConnections = options.maxConnections
-        this.isDebug = isDebug
+        this.isDebug = options.isDebug
+        this.queue = new Queue(options.maxConnections, Infinity)
     }
 
     /*
@@ -35,7 +33,13 @@ module.exports = class LoginCrawler {
 
     */
     slowQueue() {
-
+        return this.queue.add(() => {
+            return new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    resolve('done')
+                }, 2000);
+            })
+        })
     }
 
     /*
@@ -50,9 +54,6 @@ module.exports = class LoginCrawler {
             request({
                 url: url
             }, function (err, response, body) {
-
-
-
                 if (err) {
                     onError(err)
                     reject(err)
