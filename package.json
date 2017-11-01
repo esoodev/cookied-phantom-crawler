@@ -9,6 +9,7 @@
   "author": "esoodev@gmail..com",
   "license": "MIT",
   "dependencies": {
+    "cheerio": "^1.0.0-rc.2",
     "jsdom": "^11.3.0",
     "promise-queue": "^2.2.3",
     "request": "^2.83.0"

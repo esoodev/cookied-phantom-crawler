@@ -1,7 +1,7 @@
-const EventEmitter = require('events')
+const cheerio = require('cheerio')
 
 var request = require('request')
-const cookieJar = request.jar()
+var cookieJar = request.jar()
 request = request.defaults({
     jar: cookieJar
 })
@@ -15,6 +15,12 @@ const Queue = require('promise-queue')
 
 module.exports = class LoginCrawler {
 
+    /*
+    options parameter currently takes an object containing the following :
+    {
+        maxConnections : .. // Number of crawls made asynchronously at a time.
+    }
+    */
     constructor(options) {
         this.maxConnections = options.maxConnections
         this.isDebug = options.isDebug
@@ -22,70 +28,71 @@ module.exports = class LoginCrawler {
     }
 
     /*
-    
+    Queue an url to be fastly crawled.
     */
-    fastQueue() {
-
+    fastQueue(url) {
+        return this.queue.add(() => {
+            return this.fastLoad(url)
+        })
     }
 
 
     /*
-
+    Queue an url to be slowly crawled.
     */
-    slowQueue() {
+    slowQueue(url, waitMilliseconds) {
         return this.queue.add(() => {
-            return new Promise((resolve, reject) => {
-                setTimeout(() => {
-                    resolve('done')
-                }, 2000);
-            })
+            return this.slowLoad(url, waitMilliseconds)
         })
     }
 
     /*
-    Simple load of the url via http request. Ignores scripts, iframes and such. 
-    Returns a promise for an object containing the response and body.
-    Optional callback onSuccess that takes body and response SEPARATELY as parameters, 
-    and onError that takes err object as a parameter.
+    Simple load of the url via http request. Ignores asynchronous resources such as scripts and iframes.
+    Returns a promise for object containing :
+        the response, body, and body loaded onto cheerio.
     */
-    fastLoad(url, onSuccess, onError) {
+    fastLoad(url) {
 
         return new Promise((resolve, reject) => {
             request({
                 url: url
             }, function (err, response, body) {
                 if (err) {
-                    onError(err)
                     reject(err)
                 }
 
-                onSuccess(response, body)
                 resolve({
                     response: response,
-                    body: body
+                    body: body,
+                    $: cheerio.load(body)
                 })
             })
         })
     }
 
     /*
-    Load of the url using jsdom. Waits waitMilliseconds for the scripts and such to run.
-    Potentially dangerous. Returns a promise for the page content.
-    Optional callback onSuccess that takes body and response SEPARATELY as parameters, 
-    and onError that takes err object as a parameter.
+    Load the given url using jsdom. Waits waitMilliseconds for all resources to load.
+    Having said, it's potentially dangerous. Returns a promise for object containing : 
+        body, and body loaded onto cheerio.
     */
-    slowLoad(url, waitMilliseconds, onSuccess, onError) {
+    slowLoad(url, waitMilliseconds) {
 
         return new Promise((resolve, reject) => {
             let jar = cookieJar._jar
 
             JSDOM.fromURL(url, {
                 resources: 'usable',
-                runScripts: "dangerously",
+                runScripts: "dangerously", 
                 cookieJar: jar
             }).then(dom => {
                 setTimeout(() => {
-                    resolve(dom.serialize())
+
+                    let body = dom.serialize()
+
+                    resolve({
+                        body: body,
+                        $: cheerio.load(body)
+                    })
                 }, waitMilliseconds)
             }, err => {
                 reject(err)
@@ -102,10 +109,10 @@ module.exports = class LoginCrawler {
         password: 'password'
     }
     Subsequent requests made by the crawler will contain the resulting cookie.
-    Returns a Promise for an array of cookies. 
+    Returns the cookie jar. 
     */
 
-    login(loginUrl, authInfo) {
+    basicLogin(loginUrl, authInfo) {
 
         return new Promise((resolve, reject) => {
 
@@ -115,17 +122,30 @@ module.exports = class LoginCrawler {
                 if (err)
                     reject(err)
 
-                resolve(response.caseless.dict['set-cookie'])
+                resolve(this.getCookieJar())
             })
         })
     }
 
     /*
-    Returns the cookie jar.
+    Get the tough-cookie jar.
     */
-    _getCookieJar(loginUrl, authInfo) {
-
-        return cookieJar
+    getCookieJar() {
+        return cookieJar._jar
     }
 
+    /*
+    Set the tough-cookie jar.
+    */
+    setCookieJar(jar) {
+        cookieJar._jar = jar
+    }
+
+    /*
+    Store a cookie in the tough-cookie jar. Refer to:
+    https://www.npmjs.com/package/tough-cookie#setcookiecookieorstring-currenturl-options-cberrcookie
+    */
+    addCookie(cookieOrString, currentUrl, options, cb) {
+        cookieJar._jar.setCookie(cookieOrString, currentUrl, options, cb)
+    }
 }
