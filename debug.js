@@ -2,13 +2,14 @@ const qs = require('querystring')
 var tough = require('tough-cookie')
 var fs = require('fs')
 
-var LoginCrawler = require('./login-crawler')
-var crawler = new LoginCrawler({
+var Crawler = require('./cookied-phantom-crawler')
+var crawler = new Crawler({
     maxConnections: 10,
     isDebug: false
 })
 
 const boardUrl = 'http://www.slrclub.com/bbs/zboard.php?'
+const gboxUrl = 'http://gbox/community'
 
 const qsMarketForSale = {
     id: 'used_market',
@@ -25,10 +26,33 @@ main()
 async function main() {
 
     await login()
+    let jar = crawler.getCookieJar()
+    //console.log(crawler._getCookiesPhantom('https://slrclub.com')) 
+    //console.log( jar )
+    //console.log(crawler.getCookieStrings('https://slrclub.com')) 
 
-    // crawler.fastQueue('http://www.slrclub.com/bbs/vx2.php?id=used_market&category=1&no=8154985').then((res) => {
-    //     console.log(res.$('.sbj').text() + '\n')
-    // })
+    // let content = await crawler.phantomLoad('http://www.slrclub.com/bbs/vx2.php?id=used_market&category=1&no=8154985')
+    // console.log(content) 
+
+    for (let i = 8156971; i <= 8156996; i++) {
+        crawler.phantomQueue('http://www.slrclub.com/bbs/vx2.php?id=used_market&category=1&no=' + i, 2000).then((res) => {
+            console.log('post ' + i + ' : ' + res.$('.sbj').text())
+            //console.log(res.body)
+        }, (err) => {
+            console.log(err)
+        })
+    }
+
+    crawler.phantomQueue('http://gbox/community/board/view/149365/122240').then((res) => {
+        console.log(res)
+        //console.log(res.body)
+    }, (err) => {
+        console.log(err)
+    })
+
+    crawler.fastQueue('http://www.slrclub.com/bbs/vx2.php?id=used_market&category=1&no=8154985').then((res) => {
+        console.log(res.$('.sbj').text() + '\n')
+    })
 
     // for (let i = 8154985; i <= 8155013; i++) {
     //     crawler.slowQueue('http://www.slrclub.com/bbs/vx2.php?id=used_market&category=1&no=' + i, 2000).then((res) => {
@@ -39,38 +63,38 @@ async function main() {
     //     })
     // }
 
-    var stream = fs.createWriteStream(__dirname + '/test.html');
+    // var stream = fs.createWriteStream(__dirname + '/test.html');
 
-    stream.once('open', function (fd) {
-        for (var i = 8155746; i <= 8155746; i++) {
-            crawler.slowQueue('http://www.slrclub.com/bbs/vx2.php?id=used_market&category=1&no=' + i, 2000).then((res) => {
+    // stream.once('open', function (fd) {
+    //     for (var i = 8155746; i <= 8155746; i++) {
+    //         crawler.slowQueue('http://www.slrclub.com/bbs/vx2.php?id=used_market&category=1&no=' + i, 2000).then((res) => {
 
-                let $ = res.$
+    //             let $ = res.$
 
-                // $('.cmt-contents').each(
-                //     (index) => {
-                //         console.log(index + ": " + this.text())
-                //     }
-                // )
+    //             // $('.cmt-contents').each(
+    //             //     (index) => {
+    //             //         console.log(index + ": " + this.text())
+    //             //     }
+    //             // )
 
-                try {
-                    $('.cmt-contents').each(function (i, elem) {
-                        console.log($(this).text())
-                    });
-                } catch (error) {
+    //             try {
+    //                 $('.cmt-contents').each(function (i, elem) {
+    //                     console.log($(this).text())
+    //                 });
+    //             } catch (error) {
 
-                }
-                stream.write()
-                // stream.write(
-                //     'post ' + i + ' : ' + res.$('.sbj').text()+'\n'
-                //     + ''
-                // )
-                //console.log(res)
-            }, (err) => {
-                console.log(err)
-            })
-        }
-    })
+    //             }
+    //             stream.write()
+    //             // stream.write(
+    //             //     'post ' + i + ' : ' + res.$('.sbj').text()+'\n'
+    //             //     + ''
+    //             // )
+    //             //console.log(res)
+    //         }, (err) => {
+    //             console.log(err)
+    //         })
+    //     }
+    // })
 
 }
 

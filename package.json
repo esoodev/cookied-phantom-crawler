@@ -1,8 +1,8 @@
 {
-  "name": "login-crawler",
-  "version": "0.1.0",
+  "name": "cookied-phantom-crawler",
+  "version": "1.0.0",
   "description": "",
-  "main": "login-crawler.js",
+  "main": "cookied-phantom-crawler.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -11,6 +11,8 @@
   "dependencies": {
     "cheerio": "^1.0.0-rc.2",
     "jsdom": "^11.3.0",
+    "parse-cookie-phantomjs": "^1.2.0",
+    "phantom": "^4.0.5",
     "promise-queue": "^2.2.3",
     "request": "^2.83.0"
   }
