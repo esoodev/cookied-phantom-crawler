@@ -110,5 +110,7 @@ let cookies = crawler.getCookieStrings(url, options, callback)
 ##Updates
 ###1.0.0
 Release.
+###1.0.1
+Added keywords.
 
 

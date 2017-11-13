@@ -1,6 +1,6 @@
 {
   "name": "cookied-phantom-crawler",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "cookied-phantom-crawler.js",
   "scripts": {
@@ -8,6 +8,15 @@
   },
   "author": "esoodev@gmail..com",
   "license": "MIT",
+  "keywords": [
+    "phantomjs",
+    "crawler",
+    "crawling",
+    "login",
+    "cookie",
+    "JSDOM",
+    "asynchronous"
+  ],
   "dependencies": {
     "cheerio": "^1.0.0-rc.2",
     "jsdom": "^11.3.0",
